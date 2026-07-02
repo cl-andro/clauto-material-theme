@@ -1,6 +1,6 @@
 subprojects {
     group = "com.clauto.tools.materialthemebuilder"
-    version = "1.4.0"
+    version = "1.5.1"
 
     plugins.withId("java") {
         println("- Configuring `java`")
