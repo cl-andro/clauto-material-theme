@@ -6,8 +6,8 @@ subprojects {
         println("- Configuring `java`")
 
         extensions.configure<JavaPluginExtension> {
-            sourceCompatibility = JavaVersion.VERSION_11
-            targetCompatibility = JavaVersion.VERSION_11
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
         }
         tasks.register("sourcesJar", type = Jar::class) {
             archiveClassifier.set("sources")
