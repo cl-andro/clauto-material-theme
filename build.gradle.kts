@@ -1,6 +1,8 @@
 subprojects {
     group = "com.clauto.tools.materialthemebuilder"
-    version = "1.5.1"
+    val rawSuiteVersion = if (project.hasProperty("suiteVersion")) project.property("suiteVersion").toString() else ""
+    val cleanSuiteVersion = if (rawSuiteVersion.startsWith("v")) rawSuiteVersion.substring(1) else rawSuiteVersion
+    version = if (cleanSuiteVersion.isNotEmpty()) cleanSuiteVersion else "1.5.1"
 
     plugins.withId("java") {
         println("- Configuring `java`")
@@ -76,8 +78,21 @@ subprojects {
 
             afterEvaluate {
                 extensions.configure<SigningExtension> {
-                    if (findProperty("signing.gnupg.keyName") != null) {
-                        useGpgCmd()
+                    val signingKey = findProperty("signingKey") as? String
+                    val signingPassword = findProperty("signingPassword") as? String
+                    val secretKeyRingFile = findProperty("signing.secretKeyRingFile") as? String
+                    val gnuPgDir = java.io.File(System.getProperty("user.home") + "/.gnupg/private-keys-v1.d")
+
+                    val hasGpg = gnuPgDir.isDirectory && (gnuPgDir.list()?.size ?: 0) > 0
+                    val hasKeyRing = secretKeyRingFile != null && java.io.File(secretKeyRingFile).exists()
+                    val hasInMemory = !signingKey.isNullOrEmpty()
+
+                    if (hasGpg || hasKeyRing || hasInMemory) {
+                        if (hasGpg) {
+                            useGpgCmd()
+                        } else if (hasInMemory) {
+                            useInMemoryPgpKeys(signingKey, signingPassword)
+                        }
 
                         val signingTasks = sign(extensions.getByType<PublishingExtension>().publications)
                         tasks.withType(AbstractPublishToMaven::class) {
